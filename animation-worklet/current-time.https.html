@@ -44,5 +44,72 @@ promise_test(async t => {
 // TODO(majidvp): Add tests for playbackRate and animations that are not
 // associated with a timeline once these are supported in  WorkletAnimation.
 // http://crbug.com/833846
+
+promise_test(async t => {
+  await registerPassthroughAnimator();
+  const animation =
+    new WorkletAnimation('passthrough', new KeyframeEffect(createDiv(t),
+        KEYFRAMES, DURATION), document.timeline);
+
+  animation.playbackRate = 0.5;
+  animation.play();
+  assert_equals(animation.currentTime, 0,
+    'Current time returns the hold time set when entering the play-pending' +
+    'state');
+}, 'The current time returns the hold time when playback rate set during idle state');
+
+promise_test(async t => {
+  await registerPassthroughAnimator();
+  const animation =
+    new WorkletAnimation('passthrough', new KeyframeEffect(createDiv(t),
+        KEYFRAMES, DURATION), document.timeline);
+
+  animation.play();
+  animation.playbackRate = 0.5;
+  assert_equals(animation.currentTime, 0,
+    'Current time returns the hold time set when entering the play-pending' +
+    'state');
+}, 'The current time returns the hold time when playback rate set during play-pending state');
+
+promise_test(async t => {
+  await registerPassthroughAnimator();
+  const animation =
+    new WorkletAnimation('passthrough', new KeyframeEffect(createDiv(t),
+        KEYFRAMES, DURATION), document.timeline);
+
+  animation.play();
+  await waitForNextFrame();
+
+  // Set playback rate while the animation is playing
+  const playbackRate = 2;
+  const prevCurrenTime = animation.currentTime;
+  animation.playbackRate = playbackRate;
+
+  assert_times_equal(animation.currentTime, prevCurrenTime,
+    'The current time should stay unaffected by setting playback rate');
+}, 'Setting the playback rate while playing preserves the current time');
+
+promise_test(async t => {
+  await registerPassthroughAnimator();
+  const animation =
+    new WorkletAnimation('passthrough', new KeyframeEffect(createDiv(t),
+        KEYFRAMES, DURATION), document.timeline);
+
+  animation.play();
+  await waitForNextFrame();
+
+  // Set playback rate while the animation is playing
+  const playbackRate = 2;
+  const prevCurrenTime = animation.currentTime;
+  const prevTimelineTime = document.timeline.currentTime;
+  animation.playbackRate = playbackRate;
+
+  // Play the animation some more
+  await waitForNextFrame();
+
+  const timelineTime = document.timeline.currentTime;
+  assert_times_equal(animation.currentTime, prevCurrenTime + (timelineTime - prevTimelineTime) * playbackRate,
+    'The current time should increase two times faster than timeline');
+}, 'The playback rate affects the rate of progress of the current time');
 </script>
 </body>
