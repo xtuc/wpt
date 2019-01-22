@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<title>This test checks whether exceptions in SharedWorkers are logged to the parent document. An exception should be logged to the error console.</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="support/SharedWorker-create-common.js"></script>
+<div id=log></div>
+<script>
+async_test(function(t) {
+    var worker = createWorker();
+    try {
+        worker.postMessage("throw");
+        worker.postMessage("ping");
+    } catch (err) {
+        assert_unreached("FAIL: unexpected exception (" + err + ") received instead of one propagating to the parent document.")
+    }
+    worker.onmessage = function(evt) {
+        // Wait for response from ping - that's how we know we have thrown the exception.
+        if (evt.data == "PASS: Received ping message") {
+            t.done();
+        }
+    };
+});
+</script>
