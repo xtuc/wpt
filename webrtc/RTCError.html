@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset=utf-8>
+<title>RTCError-constructor.html</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="RTCPeerConnection-helper.js"></script>
+<script>
+'use strict';
+
+promise_test(async t => {
+  const error = new RTCError('errorDetail', 'message');
+  assert_equals(error.errorDetail, 'errorDetail');
+  assert_equals(error.message, 'message');
+}, 'RTCError constructor initializes errorDetail and message attributes');
+
+promise_test(async t => {
+  const error = new RTCError('foo', 'bar');
+  assert_equals(error.name, 'RTCError');
+}, 'RTCError.name is \'RTCError\'');
+
+// These attributes are not present by default and cannot be set by the
+// constructor, but if they are recognized they should be null rather than
+// undefined.
+['sdpLineNumber',
+ 'httpRequestStatusCode',
+ 'sctpCauseCode',
+ 'receivedAlert',
+ 'sentAlert'].forEach(attribute => {
+  promise_test(async t => {
+    const error = new RTCError('foo', 'bar');
+    assert_equals(error[attribute], null);
+  }, 'RTCError.' + attribute + ' is null by default');
+});
+
+</script>
