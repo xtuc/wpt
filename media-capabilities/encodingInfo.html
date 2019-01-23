@@ -289,6 +289,13 @@ promise_test(t => {
   });
 }, "Test that encodingInfo returns a valid MediaCapabilitiesInfo objects");
 
+promise_test(t => {
+  return promise_rejects(t, new TypeError(), navigator.mediaCapabilities.encodingInfo({
+    type: 'transmission',
+    video: minimalVideoConfiguration,
+  }));
+}, "Test that encodingInfo rejects if the type is 'transmission'");
+
 async_test(t => {
   var validTypes = [ 'record', 'transmission' ];
   var invalidTypes = [ undefined, null, '', 'foobar', 'mse', 'MediaSource',
